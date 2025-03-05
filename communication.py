@@ -41,7 +41,7 @@ def main():
 
     # Use Traffic Manager to keep vehicles in the same lane
     traffic_manager = client.get_trafficmanager()
-    traffic_manager.set_global_distance_to_leading_vehicle(2.0)
+    traffic_manager.set_global_distance_to_leading_vehicle(5.0)
     traffic_manager.set_synchronous_mode(False)
     traffic_manager.set_hybrid_physics_mode(True)
     traffic_manager.set_hybrid_physics_radius(100.0)
