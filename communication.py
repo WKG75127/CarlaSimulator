@@ -22,7 +22,7 @@ def main():
     # Connect to the simulator
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
-    
+
     # Load Town10HD map
     world = client.load_world('Town10HD')
     logging.info("Loaded Town10HD map.")
@@ -30,7 +30,7 @@ def main():
     # Get the blueprint library and set up the vehicle
     blueprint_library = world.get_blueprint_library()
     vehicle_bp = blueprint_library.find('vehicle.tesla.model3')
-    
+
     # Get all available road spawn points
     all_spawn_points = world.get_map().get_spawn_points()
 
@@ -42,6 +42,7 @@ def main():
     # Use Traffic Manager to keep vehicles in the same lane
     traffic_manager = client.get_trafficmanager()
     traffic_manager.set_global_distance_to_leading_vehicle(5.0)
+    traffic_manager.set_global_percentage_speed_difference
     traffic_manager.set_synchronous_mode(False)
     traffic_manager.set_hybrid_physics_mode(True)
     traffic_manager.set_hybrid_physics_radius(100.0)
@@ -53,20 +54,20 @@ def main():
 
     parallel_spawn_points = [
         carla.Transform(
-            carla.Location(x=base_spawn_point.location.x, 
-                           y=base_spawn_point.location.y - lane_width, 
+            carla.Location(x=base_spawn_point.location.x,
+                           y=base_spawn_point.location.y - lane_width,
                            z=base_spawn_point.location.z),
             base_spawn_point.rotation
         ),
         carla.Transform(
-            carla.Location(x=base_spawn_point.location.x, 
-                           y=base_spawn_point.location.y, 
+            carla.Location(x=base_spawn_point.location.x,
+                           y=base_spawn_point.location.y,
                            z=base_spawn_point.location.z),
             base_spawn_point.rotation
         ),
         carla.Transform(
-            carla.Location(x=base_spawn_point.location.x, 
-                           y=base_spawn_point.location.y + lane_width, 
+            carla.Location(x=base_spawn_point.location.x,
+                           y=base_spawn_point.location.y + lane_width,
                            z=base_spawn_point.location.z),
             base_spawn_point.rotation
         )
