@@ -4,7 +4,14 @@ import numpy as np
 import logging
 import random
 import queue
-
+min_distance = 5
+def radar_react(data,vehicle)
+    for detection in data
+        distance = detection.depth
+        if(distance<min_distance)
+            control.throttle = min(1.0, control.throttle + 0.2)
+        else
+            control.throttle = max(0.0,control.throttle- 0.2)
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
