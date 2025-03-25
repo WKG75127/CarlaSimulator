@@ -4,6 +4,7 @@ import numpy as np
 import logging
 import random
 import queue
+import sqlite3
 min_distance = 5
 def radar_react(data,vehicle)
     for detection in data
@@ -24,7 +25,45 @@ sensor_data = [{'camera': None, 'radar': 'Radar: N/A', 'lidar': 'LiDAR: N/A'} fo
 # Initialize V2V communication data
 v2v_data = [{'radar': 'Radar: N/A', 'lidar': 'LiDAR: N/A'} for _ in range(3)]
 
-
+# SQLite Database Setup
+conn = sqlite3.connect('carla_data.db')
+cursor = conn.cursor()
+# Create tables for vehicles and sensors
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS vehicles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT UNIQUE,
+        vehicle_type TEXT,
+        location_x REAL,
+        location_y REAL,
+        location_z REAL
+    )
+''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS sensors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sensor_id TEXT UNIQUE,
+        sensor_type TEXT,
+        vehicle_id TEXT,
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
+    )
+''')
+conn.commit()
+def add_vehicle_to_db(vehicle):
+    """Store vehicle details in the database."""
+    cursor.execute('''
+        INSERT INTO vehicles (vehicle_id, vehicle_type, location_x, location_y, location_z)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (vehicle.id, vehicle.type_id, vehicle.get_location().x, vehicle.get_location().y, 
+vehicle.get_location().z))
+    conn.commit()
+def add_sensor_to_db(sensor, sensor_type, vehicle):
+    """Store sensor details in the database, linked to a vehicle."""
+    cursor.execute('''
+        INSERT INTO sensors (sensor_id, sensor_type, vehicle_id)
+        VALUES (?, ?, ?)
+    ''', (sensor.id, sensor_type, vehicle.id))
+    conn.commit()
 def main():
     # Connect to the simulator
     client = carla.Client('localhost', 2000)
@@ -103,6 +142,7 @@ def main():
         camera_transform = carla.Transform(carla.Location(x=1.5, z=2.4))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=vehicle)
         cameras.append(camera)
+        add_sensor_to_db(camera, 'camera', vehicle
 
         # Add radar sensor
         radar_bp = blueprint_library.find('sensor.other.radar')
@@ -112,6 +152,7 @@ def main():
         radar_transform = carla.Transform(carla.Location(x=2.5, z=1.0))
         radar = world.spawn_actor(radar_bp, radar_transform, attach_to=vehicle)
         radars.append(radar)
+        add_sensor_to_db(radar, 'radar', vehicle)
 
         # Add LiDAR sensor
         lidar_bp = blueprint_library.find('sensor.lidar.ray_cast')
@@ -121,6 +162,7 @@ def main():
         lidar_transform = carla.Transform(carla.Location(x=0, z=2.5))
         lidar = world.spawn_actor(lidar_bp, lidar_transform, attach_to=vehicle)
         lidars.append(lidar)
+        add_sensor_to_db(lidar, 'lidar', vehicle)
 
         # Sensor callbacks with proper index binding
         camera.listen(lambda image, idx=i: communication_queue.put((idx, 'camera', image)))
