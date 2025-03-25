@@ -1,14 +1,14 @@
 import carla
 import random
 min_distance = 5
-def radar_react(data,vehicle){
-    for detection in data{
+def radar_react(data,vehicle)
+    for detection in data
         distance = detection.depth
-        if(distance<min_distance){
+        if(distance<min_distance)
             control.throttle = min(1.0, control.throttle + 0.2)
-        }
-    }
-}
+        else
+            control.throttle = max(0.0,control.throttle- 0.2)
+
 client = carla.Client('localhost', 2000)
 client.set_timeout(10.0)
 world = client.get_world()
