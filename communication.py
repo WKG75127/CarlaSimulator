@@ -54,7 +54,7 @@ def add_vehicle_to_db(vehicle):
     cursor.execute('''
         INSERT INTO vehicles (vehicle_id, vehicle_type, location_x, location_y, location_z)
         VALUES (?, ?, ?, ?, ?)
-    ''', (vehicle.id, vehicle.type_id, vehicle.get_location().x, vehicle.get_location().y, 
+    ''', (vehicle.id, vehicle.type_id, vehicle.get_location().x, vehicle.get_location().y,
 vehicle.get_location().z))
     conn.commit()
 def add_sensor_to_db(sensor, sensor_type, vehicle):
@@ -193,7 +193,12 @@ def main():
                 cv2.imshow('Carla Multi-Camera Feed with V2V Data', combined_feed)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-
+        for detections:
+            cursor.execute(
+                "SELECT vehicle_id FROM sensors where sensor_id = %s;", (radar_id,)))
+            )
+            vehicle = cursor.fetchone()
+            radar.listen(lambda data: radar_react(data, vehicle))
     except KeyboardInterrupt:
         logging.info("Simulation interrupted. Cleaning up...")
     finally:
