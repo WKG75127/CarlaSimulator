@@ -193,12 +193,12 @@ def main():
                 cv2.imshow('Carla Multi-Camera Feed with V2V Data', combined_feed)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-        for detections:
-            cursor.execute(
-                "SELECT vehicle_id FROM sensors where sensor_id = %s;", (radar_id,)))
-            )
-            vehicle = cursor.fetchone()
-            radar.listen(lambda data: radar_react(data, vehicle))
+            for detections:
+                cursor.execute(
+                    "SELECT vehicle_id FROM sensors where sensor_id = %s;", (radar_id,)))
+                )
+                vehicle = cursor.fetchone()
+                radar.listen(lambda data: radar_react(data, vehicle))
     except KeyboardInterrupt:
         logging.info("Simulation interrupted. Cleaning up...")
     finally:
