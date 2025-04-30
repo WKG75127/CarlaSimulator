@@ -5,7 +5,23 @@ import logging
 import random
 import queue
 import sqlite3
+import os
+import ctypes
+import pygame
+from pygame.locals import *
+
+os.environ['SDL_VIDEO_WINDOW_POS'] = "0,0"
+r = 0
+m = ""
+ti = "title"
+cX = 0
+cY = 0
+cZ = 0
 min_distance = 5
+pygame.font.init()
+display_surface = pygame.display.set_mode((250, 300), pygame.NOFRAME)
+hwnd = pygame.display.get_wm_info()['window']
+
 def radar_react(data,vehicle)
     for detection in data
         distance = detection.depth
@@ -64,6 +80,63 @@ def add_sensor_to_db(sensor, sensor_type, vehicle):
         VALUES (?, ?, ?)
     ''', (sensor.id, sensor_type, vehicle.id))
     conn.commit()
+
+
+def createDisplay():
+
+	# creates font variables with font file and size
+	font1 = pygame.font.SysFont('chalkduster.ttf', 40)
+	font2 = pygame.font.SysFont('freesanbold.ttf', 30)
+ 
+	# renders the text displays
+	title = font1.render(f'{ti}', True, (0, 255, 0))
+	rmp = font2.render(f'RMP: {r}', True, (0, 255, 0))
+	model = font2.render(f'Car Model: {m}', True, (0, 255, 0))
+	location = font2.render(f'Location: {cX}, {cY}, {cZ}', True, (0, 255, 0))
+ 
+	# creates text surface objects
+	tRect = title.get_rect()
+	mRect = model.get_rect()
+	rRect = rmp.get_rect()
+	lRect = location.get_rect()
+
+ 
+	# setting the tilte center
+	tRect.center = (125, 15)
+ 
+	# setting the model midleft
+	mRect.midleft = (5, 75)
+
+	# setting the speed midleft
+	rRect.midleft = (5, 125)
+ 
+	# setting the throttle midleft
+	lRect.midleft = (5, 175)
+
+	display_surface.set_alpha(0)   
+
+	display_surface.blit(title, tRect)
+	display_surface.blit(model, mRect)
+	display_surface.blit(location, lRect)
+	display_surface.blit(rmp, rRect) 
+
+def keep_top_window(hwnd):
+	ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
+
+def get_Ana(vehicle):
+	ti = vehicle.id
+	m = vehicle.type_id 
+	cX = vehicle.get_location().x
+	cY= vehicle.get_location().y
+	cZ = vehicle.get_location().z
+	spLim = vehicle.get_speed_limit()
+	velocity = vehicle.get_velocity()
+	r = math.sqrt(velocity.x ** 2 + velocity.y ** 2 + velocity.z ** 2)
+    pygame.display.flip()
+    
+    
+
+
 def main():
     # Connect to the simulator
     client = carla.Client('localhost', 2000)
@@ -130,7 +203,7 @@ def main():
     # Enable autopilot for all vehicles
     for vehicle in vehicles:
         vehicle.set_autopilot(True, traffic_manager.get_port())
-
+        get_Ana(vehicle)
     # Add sensors to each vehicle
     for i, vehicle in enumerate(vehicles):
         # Add camera
@@ -142,7 +215,7 @@ def main():
         camera_transform = carla.Transform(carla.Location(x=1.5, z=2.4))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=vehicle)
         cameras.append(camera)
-        add_sensor_to_db(camera, 'camera', vehicle
+        add_sensor_to_db(camera, 'camera', vehicle)
 
         # Add radar sensor
         radar_bp = blueprint_library.find('sensor.other.radar')
@@ -171,6 +244,13 @@ def main():
 
     try:
         while True:
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            
+            keep_top_window(hwnd)
+            
             if not communication_queue.empty():
                 index, sensor_type, data = communication_queue.get()
                 if sensor_type == 'camera':
@@ -207,4 +287,7 @@ def main():
         logging.info('Destroyed all actors')
 
 if __name__ == '__main__':
+    
     main()
+    createDisplay()
+    
