@@ -22,12 +22,12 @@ pygame.font.init()
 display_surface = pygame.display.set_mode((250, 300), pygame.NOFRAME)
 hwnd = pygame.display.get_wm_info()['window']
 
-def radar_react(data,vehicle)
-    for detection in data
+def radar_react(data,vehicle):
+    for detection in data:
         distance = detection.depth
-        if(distance<min_distance)
+        if(distance<min_distance):
             control.throttle = min(1.0, control.throttle + 0.2)
-        else
+	else:
             control.throttle = max(0.0,control.throttle- 0.2)
 # Set up logging
 logging.basicConfig(level=logging.INFO)
